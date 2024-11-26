@@ -1,0 +1,36 @@
+
+name: Build and Push Node.js Docker Image to ECR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          region: ${{ secrets.AWS_REGION }} # Ensure the AWS region is set as a GitHub secret
+
+      # Step 5: Build Docker image
+      - name: Build
+        run: |
+          docker build -f ../Packaging/Appointment/Dockerfile -t patient:latest
+
+      # Step 6: Tag the Docker image for ECR
+      - name: Tag Docker Image
+        run: |
+          docker tag patient:latest 539935451710.dkr.ecr.us-east-1.amazonaws.com/group3-hu2/squad8:latest
+
+      # Step 7: Push Docker image to ECR
+      - name: Push Docker Image to ECR
+        run: |
+          docker push 539935451710.dkr.ecr.us-east-1.amazonaws.com/group3-hu2/squad8:latest
