@@ -143,7 +143,7 @@ resource "aws_ecs_task_definition" "patient_service" {
     essential = true
     portMappings = [
       {
-        containerPort = 3000  # Adjust the port number for your Node.js service
+        containerPort = 3001  # Adjust the port number for your Node.js service
         hostPort      = 3000
       }
     ]
@@ -167,7 +167,7 @@ resource "aws_ecs_task_definition" "appointment_service" {
     essential = true
     portMappings = [
       {
-        containerPort = 4000  # Adjust the port number for second Node.js service
+        containerPort = 3002  # Adjust the port number for second Node.js service
         hostPort      = 4000
       }
     ]
