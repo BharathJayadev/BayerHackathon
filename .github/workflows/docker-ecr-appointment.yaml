@@ -36,10 +36,10 @@ jobs:
       # Step 6: Tag the Docker image for ECR
       - name: Tag Docker Image
         run: |
-          docker tag appointment:latest 539935451710.dkr.ecr.us-east-1.amazonaws.com/group3-hu2/squad8:latest
+          docker tag appointment:latest 539935451710.dkr.ecr.us-east-1.amazonaws.com/group3-hu2/squad8/appointment:latest
 
       # Step 7: Push Docker image to ECR
       - name: Push Docker Image to ECR
         run: |
-          docker push 539935451710.dkr.ecr.us-east-1.amazonaws.com/group3-hu2/squad8:latest
+          docker push 539935451710.dkr.ecr.us-east-1.amazonaws.com/group3-hu2/squad8/appointment:latest
 
