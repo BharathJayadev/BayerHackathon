@@ -35,10 +35,11 @@ jobs:
       - name: Echo directory files
         run: |
           echo "Current directory: $(ls)"
+          
         # Step 5: Build Docker image
       - name: Build
         run: |
-          docker build -f ../Packaging/Appointment/Dockerfile -t appointment:latest ../Packaging/Appointment
+          docker build -f ../Packaging/Appointment/Dockerfile -t patient:latest ../Packaging/Patient
 
       # Step 6: Tag the Docker image for ECR
       - name: Tag Docker Image
