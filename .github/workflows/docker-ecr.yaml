@@ -21,17 +21,17 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       # Step 5: Build Docker image
-     -  name: Build
+      - name: Build
         run: |
-          docker build -f ../path/to/Dockerfile -t my-image:latest .
+          docker build -f ../Packaging/Appointment/Dockerfile -t group3-hu2:latest .
 
       # Step 6: Tag the Docker image for ECR
       - name: Tag Docker Image
         run: |
-          docker tag ${{ secrets.ECR_REPOSITORY }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
+          docker tag group3-hu2/squad8:latest 539935451710.dkr.ecr.us-east-1.amazonaws.com/group3-hu2/squad8:latest
 
       # Step 7: Push Docker image to ECR
       - name: Push Docker Image to ECR
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
+          docker push 539935451710.dkr.ecr.us-east-1.amazonaws.com/group3-hu2/squad8:latest
 
