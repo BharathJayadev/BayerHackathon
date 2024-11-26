@@ -126,6 +126,8 @@ resource "aws_ecs_cluster" "main" {
   name = var.ecs_cluster_name
 }
 
+
+
 # ECS Task Definition for Service 1 (Patient service)
 resource "aws_ecs_task_definition" "patient_service" {
   family                   = "patient_service-task"
@@ -143,7 +145,7 @@ resource "aws_ecs_task_definition" "patient_service" {
     essential = true
     portMappings = [
       {
-        containerPort = 3001  # Adjust the port number for your Node.js service
+        containerPort = 3000  # Adjust the port number for your Node.js service
         hostPort      = 3000
       }
     ]
@@ -167,7 +169,7 @@ resource "aws_ecs_task_definition" "appointment_service" {
     essential = true
     portMappings = [
       {
-        containerPort = 3002  # Adjust the port number for second Node.js service
+        containerPort = 4000  # Adjust the port number for second Node.js service
         hostPort      = 4000
       }
     ]
@@ -200,4 +202,69 @@ resource "aws_ecs_service" "appointment_service" {
     security_groups = [aws_security_group.ecs.id]
     assign_public_ip = false
   }
+}
+
+
+resource "aws_iam_role" "ecs_execution_role" {
+  name = "ecs-execution-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+        Effect   = "Allow"
+        Sid      = ""
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "ecs_execution_policy" {
+  name        = "ecs-execution-policy"
+  description = "ECS Execution Role Policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchGetImage",
+          "ecr:BatchCheckLayerAvailability"
+        ]
+        Resource = "arn:aws:ecr:${var.region}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repository_name}"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:${var.region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecs:DescribeTasks",
+          "ecs:ListTasks"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy_attach" {
+  policy_arn = aws_iam_policy.ecs_execution_policy.arn
+  role       = aws_iam_role.ecs_execution_role.name
+
+  depends_on = [
+    aws_iam_role.ecs_execution_role
+    aws_iam_role.ecs_task_role
+  ]
 }
