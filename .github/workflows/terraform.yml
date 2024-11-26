@@ -27,7 +27,7 @@ jobs:
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS access key from GitHub Secrets
           aws_secret_access_key: ${{ secrets.AWS_SECRET_KEY_ID }}  # AWS secret key from GitHub Secrets
-          aws_region: 'us-east-1'  # Your AWS region
+          aws_region: ${{ secrets.AWS_REGION }}  # Your AWS region
 
       - name: Terraform Init
         run: terraform init
