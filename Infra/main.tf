@@ -1,4 +1,3 @@
-
 provider "aws" {
   region = var.region
 }
@@ -127,26 +126,78 @@ resource "aws_ecs_cluster" "main" {
   name = var.ecs_cluster_name
 }
 
-# Optional: ECS Task Definition (example only)
-resource "aws_ecs_task_definition" "example" {
-  family                   = "example-task"
-  execution_role_arn       = "arn:aws:iam::539935451710:role/execution_role"
+# ECS Task Definition for Service 1 (Patient service)
+resource "aws_ecs_task_definition" "patient_service" {
+  family                   = "patient_service-task"
+  execution_role_arn       = "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_EXECUTION_ROLE"
   task_role_arn            = "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_TASK_ROLE"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
   container_definitions    = jsonencode([{
-    name      = "example-container"
-    image     = "nginx"
+    name      = "patient_service-container"
+    image     = "your-dockerhub-username/patient_service-image"  # Replace with Node.js image
     cpu       = 256
     memory    = 512
     essential = true
     portMappings = [
       {
-        containerPort = 80
-        hostPort      = 80
+        containerPort = 3000  # Adjust the port number for your Node.js service
+        hostPort      = 3000
       }
     ]
   }])
+}
+
+# ECS Task Definition for Service 2 (Appointment Service)
+resource "aws_ecs_task_definition" "appointment_service" {
+  family                   = "appointment_service-task"
+  execution_role_arn       = "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_EXECUTION_ROLE"
+  task_role_arn            = "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_TASK_ROLE"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  container_definitions    = jsonencode([{
+    name      = "appointment_service-container"
+    image     = "your-dockerhub-username/appointment_service-image"  # Replace with Node.js image
+    cpu       = 256
+    memory    = 512
+    essential = true
+    portMappings = [
+      {
+        containerPort = 4000  # Adjust the port number for second Node.js service
+        hostPort      = 4000
+      }
+    ]
+  }])
+}
+
+# ECS Service for Patient Service ()
+resource "aws_ecs_service" "patient_service" {
+  name            = "patient_service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.service_1.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets          = [aws_subnet.private.id]
+    security_groups = [aws_security_group.ecs.id]
+    assign_public_ip = false
+  }
+}
+
+# ECS Service for appointment_service
+resource "aws_ecs_service" "appointment_service" {
+  name            = "appointment_service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.service_2.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets          = [aws_subnet.private.id]
+    security_groups = [aws_security_group.ecs.id]
+    assign_public_ip = false
+  }
 }
