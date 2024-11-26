@@ -145,6 +145,7 @@ resource "aws_iam_role" "ecs_execution_role" {
   })
 }
 
+# IAM Policy for ECS Execution Role
 resource "aws_iam_policy" "ecs_execution_policy" {
   name        = "ecs-execution-policy"
   description = "ECS Execution Role Policy"
@@ -181,6 +182,7 @@ resource "aws_iam_policy" "ecs_execution_policy" {
   })
 }
 
+# Attach Execution Role Policy to the ECS Execution Role
 resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy_attach" {
   policy_arn = aws_iam_policy.ecs_execution_policy.arn
   role       = aws_iam_role.ecs_execution_role.name
@@ -274,4 +276,13 @@ resource "aws_iam_role" "ecs_task_role" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action    = "sts:
+        Action    = "sts:AssumeRole"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+        Effect   = "Allow"
+        Sid      = ""
+      },
+    ]
+  })
+}
