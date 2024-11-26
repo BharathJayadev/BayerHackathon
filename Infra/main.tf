@@ -126,85 +126,7 @@ resource "aws_ecs_cluster" "main" {
   name = var.ecs_cluster_name
 }
 
-
-
-# ECS Task Definition for Service 1 (Patient service)
-resource "aws_ecs_task_definition" "patient_service" {
-  family                   = "patient_service-task"
-  execution_role_arn       = "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_EXECUTION_ROLE"
-  task_role_arn            = "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_TASK_ROLE"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"
-  memory                   = "512"
-  container_definitions    = jsonencode([{
-    name      = "patient_service-container"
-    image     = "your-dockerhub-username/patient_service-image"  # Replace with Node.js image
-    cpu       = 256
-    memory    = 512
-    essential = true
-    portMappings = [
-      {
-        containerPort = 3000  # Adjust the port number for your Node.js service
-        hostPort      = 3000
-      }
-    ]
-  }])
-}
-
-# ECS Task Definition for Service 2 (Appointment Service)
-resource "aws_ecs_task_definition" "appointment_service" {
-  family                   = "appointment_service-task"
-  execution_role_arn       = "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_EXECUTION_ROLE"
-  task_role_arn            = "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_TASK_ROLE"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"
-  memory                   = "512"
-  container_definitions    = jsonencode([{
-    name      = "appointment_service-container"
-    image     = "your-dockerhub-username/appointment_service-image"  # Replace with Node.js image
-    cpu       = 256
-    memory    = 512
-    essential = true
-    portMappings = [
-      {
-        containerPort = 4000  # Adjust the port number for second Node.js service
-        hostPort      = 4000
-      }
-    ]
-  }])
-}
-
-# ECS Service for Patient Service ()
-resource "aws_ecs_service" "patient_service" {
-  name            = "patient_service"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.service_1.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
-  network_configuration {
-    subnets          = [aws_subnet.private.id]
-    security_groups = [aws_security_group.ecs.id]
-    assign_public_ip = false
-  }
-}
-
-# ECS Service for appointment_service
-resource "aws_ecs_service" "appointment_service" {
-  name            = "appointment_service"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.service_2.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
-  network_configuration {
-    subnets          = [aws_subnet.private.id]
-    security_groups = [aws_security_group.ecs.id]
-    assign_public_ip = false
-  }
-}
-
-
+# IAM Role for Execution (ECS)
 resource "aws_iam_role" "ecs_execution_role" {
   name = "ecs-execution-role"
 
@@ -265,6 +187,91 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy_attach" {
 
   depends_on = [
     aws_iam_role.ecs_execution_role
-    aws_iam_role.ecs_task_role
   ]
 }
+
+# ECS Task Definition for Service 1 (Patient service)
+resource "aws_ecs_task_definition" "patient_service" {
+  family                   = "patient_service-task"
+  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  container_definitions    = jsonencode([{
+    name      = "patient_service-container"
+    image     = "your-dockerhub-username/patient_service-image"
+    cpu       = 256
+    memory    = 512
+    essential = true
+    portMappings = [
+      {
+        containerPort = 3000
+        hostPort      = 3000
+      }
+    ]
+  }])
+}
+
+# ECS Task Definition for Service 2 (Appointment Service)
+resource "aws_ecs_task_definition" "appointment_service" {
+  family                   = "appointment_service-task"
+  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  container_definitions    = jsonencode([{
+    name      = "appointment_service-container"
+    image     = "your-dockerhub-username/appointment_service-image"
+    cpu       = 256
+    memory    = 512
+    essential = true
+    portMappings = [
+      {
+        containerPort = 4000
+        hostPort      = 4000
+      }
+    ]
+  }])
+}
+
+# ECS Service for Patient Service
+resource "aws_ecs_service" "patient_service" {
+  name            = "patient_service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.patient_service.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets          = [aws_subnet.private.id]
+    security_groups = [aws_security_group.ecs.id]
+    assign_public_ip = false
+  }
+}
+
+# ECS Service for Appointment Service
+resource "aws_ecs_service" "appointment_service" {
+  name            = "appointment_service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.appointment_service.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets          = [aws_subnet.private.id]
+    security_groups = [aws_security_group.ecs.id]
+    assign_public_ip = false
+  }
+}
+
+# IAM Role for Task (Optional if your service needs to interact with other AWS services)
+resource "aws_iam_role" "ecs_task_role" {
+  name = "ecs-task-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:
