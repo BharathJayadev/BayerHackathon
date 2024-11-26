@@ -27,7 +27,14 @@ jobs:
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-        
+
+      - name: Echo current directory
+        run: |
+          echo "Current directory: $(pwd)"
+
+      - name: Echo directory files
+        run: |
+          echo "Current directory: $(ls)"
         # Step 5: Build Docker image
       - name: Build
         run: |
