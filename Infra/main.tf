@@ -130,7 +130,7 @@ resource "aws_ecs_cluster" "main" {
 # Optional: ECS Task Definition (example only)
 resource "aws_ecs_task_definition" "example" {
   family                   = "example-task"
-  execution_role_arn       = "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_EXECUTION_ROLE"
+  execution_role_arn       = "arn:aws:iam::539935451710:role/execution_role"
   task_role_arn            = "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_TASK_ROLE"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
