@@ -31,7 +31,7 @@ jobs:
         # Step 5: Build Docker image
       - name: Build
         run: |
-          docker build -f ../Packaging/Patient/Dockerfile -t patient:latest
+          docker buildx build -t patient:latest ../Packaging/Patient/
 
       # Step 6: Tag the Docker image for ECR
       - name: Tag Docker Image
